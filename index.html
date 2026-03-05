@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استعلام تسجيل الطلاب</title>
+    <style>
+        :root {
+            --color-background: #fcfcf9;
+            --color-surface: #fffffd;
+            --color-text: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-success: #21808d;
+            --color-error: #c0152f;
+            --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background: var(--color-background);
+            color: var(--color-text);
+            padding: var(--space-20);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: var(--space-24);
+            color: var(--color-primary);
+            text-align: center;
+        }
+
+        .search-section {
+            background: var(--color-surface);
+            padding: var(--space-24);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--space-24);
+        }
+
+        .search-group {
+            margin-bottom: var(--space-20);
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: var(--space-8);
+            color: var(--color-text);
+            font-size: 16px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: var(--space-12);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            font-size: 16px;
+            background: var(--color-surface);
+            color: var(--color-text);
+            font-family: var(--font-family-base);
+        }
+
+        input:focus, select:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .button-group {
+            display: flex;
+            gap: var(--space-12);
+            margin-top: var(--space-20);
+        }
+
+        button {
+            flex: 1;
+            padding: var(--space-12) var(--space-24);
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--color-primary-hover);
+        }
+
+        button.secondary {
+            background: rgba(94, 82, 64, 0.12);
+            color: var(--color-text);
+        }
+
+        button.secondary:hover {
+            background: rgba(94, 82, 64, 0.2);
+        }
+
+        .results {
+            background: var(--color-surface);
+            padding: var(--space-24);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results h2 {
+            font-size: 24px;
+            margin-bottom: var(--space-20);
+            color: var(--color-primary);
+        }
+
+        .student-info {
+            margin-bottom: var(--space-20);
+            padding: var(--space-16);
+            background: rgba(33, 128, 141, 0.05);
+            border-radius: var(--radius-base);
+            border-right: 4px solid var(--color-primary);
+        }
+
+        .student-info p {
+            margin-bottom: var(--space-8);
+            font-size: 16px;
+        }
+
+        .student-info strong {
+            color: var(--color-primary);
+        }
+
+        .courses-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--space-16);
+        }
+
+        .courses-table th,
+        .courses-table td {
+            padding: var(--space-12);
+            text-align: right;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .courses-table th {
+            background: rgba(33, 128, 141, 0.1);
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .courses-table tr:hover {
+            background: rgba(33, 128, 141, 0.03);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-registered {
+            background: rgba(33, 128, 141, 0.15);
+            color: var(--color-success);
+            border: 1px solid rgba(33, 128, 141, 0.25);
+        }
+
+        .status-not-registered {
+            background: rgba(192, 21, 47, 0.15);
+            color: var(--color-error);
+            border: 1px solid rgba(192, 21, 47, 0.25);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: var(--space-24);
+            color: var(--color-text-secondary);
+            font-size: 18px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .button-group {
+                flex-direction: column;
+            }
+
+            .courses-table {
+                font-size: 14px;
+            }
+
+            .courses-table th,
+            .courses-table td {
+                padding: var(--space-8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 نظام استعلام تسجيل الطلاب</h1>
+
+        <div class="search-section">
+            <div class="search-group">
+                <label for="searchType">اختر نوع البحث:</label>
+                <select id="searchType" onchange="updateSearchInterface()">
+                    <option value="student">البحث عن طالب</option>
+                    <option value="course">البحث عن مادة</option>
+                </select>
+            </div>
+
+            <div id="studentSearch" class="search-group">
+                <label for="studentInput">أدخل اسم الطالب:</label>
+                <input type="text" id="studentInput" placeholder="مثال: احمد علاء عيد محمد">
+            </div>
+
+            <div id="courseSearch" class="search-group" style="display: none;">
+                <label for="courseSelect">اختر المادة:</label>
+                <select id="courseSelect">
+                    <option value="">-- اختر المادة --</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button onclick="performSearch()">🔍 بحث</button>
+                <button class="secondary" onclick="clearResults()">مسح النتائج</button>
+            </div>
+        </div>
+
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        let studentsData = [];
+        let currentCourse = '';
+
+        const courseNames = [
+            "الادب الامريكي في القرن العشرين",
+            "الترجمه من الانجليزية واليها (2)",
+            "اللغه الفرنسيه 3",
+            "اللغه اللاتينيه 3",
+            "النحو المتقدم في اللغه الانجليزية",
+            "النقد النظري والتطبيقي",
+            "بنية مجتمع المعلومات",
+            "مدخل الي علم اللغه الاجتماعي"
+        ];
+
+        async function loadStudentsData() {
+            try {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbxtjUwEg2JMSPETry35dcJXqIP93ZxRWnYuDu0HbDIZ89plj7cAhOc_c1HX_hUQ7MQK/exec');
+                studentsData = await response.json();
+                initializeCourseDropdown();
+            } catch (error) {
+                alert('حدث خطأ في تحميل البيانات من جوجل شيتس');
+                console.error(error);
+            }
+        }
+
+        function initializeCourseDropdown() {
+            const courseSelect = document.getElementById('courseSelect');
+            courseSelect.innerHTML = '<option value="">-- اختر المادة --</option>';
+            courseNames.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course;
+                option.textContent = course;
+                courseSelect.appendChild(option);
+            });
+        }
+
+        function updateSearchInterface() {
+            const searchType = document.getElementById('searchType').value;
+            const studentSearch = document.getElementById('studentSearch');
+            const courseSearch = document.getElementById('courseSearch');
+
+            if (searchType === 'student') {
+                studentSearch.style.display = 'block';
+                courseSearch.style.display = 'none';
+            } else {
+                studentSearch.style.display = 'none';
+                courseSearch.style.display = 'block';
+            }
+
+            clearResults();
+        }
+
+        function performSearch() {
+            const searchType = document.getElementById('searchType').value;
+            
+            if (searchType === 'student') {
+                searchByStudent();
+            } else {
+                searchByCourse();
+            }
+        }
+
+        function searchByStudent() {
+            const studentInput = document.getElementById('studentInput').value.trim();
+            
+            if (!studentInput) {
+                alert('من فضلك أدخل اسم الطالب');
+                return;
+            }
+
+            const results = studentsData.filter(student => 
+                String(student.name || '').includes(studentInput)
+            );
+
+            displayStudentResults(results);
+        }
+
+        function searchByCourse() {
+            const courseSelect = document.getElementById('courseSelect').value;
+            
+            if (!courseSelect) {
+                alert('من فضلك اختر المادة');
+                return;
+            }
+
+            currentCourse = courseSelect;
+            displayCourseResults(courseSelect);
+        }
+
+        function displayStudentResults(students) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (students.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">❌ لم يتم العثور على الطالب</div>';
+                resultsDiv.classList.add('show');
+                return;
+            }
+
+            let html = '<h2>📋 نتائج البحث عن الطالب</h2>';
+
+            students.forEach(student => {
+                html += `
+                    <div class="student-info">
+                        <p><strong>الاسم:</strong> ${student.name || ''}</p>
+                        ${student.status ? `<p><strong>الحالة:</strong> ${student.status}</p>` : ''}
+                        ${student.seatNo ? `<p><strong>رقم الجلوس:</strong> ${student.seatNo}</p>` : ''}
+                    </div>
+                    <div class="table-container">
+                        <table class="courses-table">
+                            <thead>
+                                <tr>
+                                    <th>المادة</th>
+                                    <th>حالة التسجيل</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                courseNames.forEach(course => {
+                    const status = (student.courses && student.courses[course]) || "";
+                    const cleanStatus = String(status || '').trim();
+                    const isRegistered = cleanStatus === 'مسجل';
+                    const statusClass = isRegistered ? 'status-registered' : 'status-not-registered';
+                    const statusText = isRegistered ? 'مسجل ✓' : 'غير مسجل ✗';
+                    
+                    html += `
+                        <tr>
+                            <td>${course}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('show');
+        }
+
+        function displayCourseResults(courseName) {
+            const resultsDiv = document.getElementById('results');
+            
+            let html = `<h2>📚 الطلاب في: ${courseName}</h2>`;
+            html += `
+                <div class="button-group" style="margin-bottom: 20px;">
+                    <button onclick="exportToWord()">📥 تصدير التقرير (Word)</button>
+                </div>
+                <div class="table-container">
+                    <table class="courses-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الطالب</th>
+                                <th>رقم الجلوس</th>
+                                <th>حالة التسجيل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            let counter = 1;
+            studentsData.forEach(student => {
+                const status = student.courses ? student.courses[courseName] : "";
+                const cleanStatus = String(status || '').trim();
+                const isRegistered = cleanStatus === 'مسجل';
+                const statusClass = isRegistered ? 'status-registered' : 'status-not-registered';
+                const statusText = isRegistered ? 'مسجل ✓' : 'غير مسجل ✗';
+                
+                html += `
+                    <tr>
+                        <td>${counter++}</td>
+                        <td>${student.name || ''}</td>
+                        <td>${student.seatNo || '-'}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+            resultsDiv.classList.add('show');
+        }
+
+        function clearResults() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            resultsDiv.classList.remove('show');
+            currentCourse = '';
+            
+            document.getElementById('studentInput').value = '';
+            if (document.getElementById('courseSelect')) {
+                document.getElementById('courseSelect').value = '';
+            }
+        }
+
+        function generateReportHTML() {
+            let registeredCount = 0;
+            let notRegisteredCount = 0;
+
+            const allStudents = studentsData.map((student, index) => {
+                const status = student.courses ? student.courses[currentCourse] : "";
+                const cleanStatus = String(status || '').trim();
+                const isRegistered = cleanStatus === 'مسجل';
+                
+                if (isRegistered) registeredCount++;
+                else notRegisteredCount++;
+
+                return {
+                    index: index + 1,
+                    name: student.name || '',
+                    seatNo: student.seatNo || '-',
+                    status: isRegistered ? 'مسجل' : 'غير مسجل'
+                };
+            });
+
+            return `
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm 1.5cm;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            font-size: 12pt;
+            font-weight: bold;
+            line-height: 1.1;
+        }
+        
+        .doc-header {
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 6px 0;
+            border-bottom: 2px solid #000;
+        }
+        .header-grid {
+            display: table;
+            width: 100%;
+        }
+        .header-cell {
+            display: table-cell;
+            vertical-align: middle;
+            font-size: 11pt;
+            font-weight: bold;
+            padding: 2px 5px;
+        }
+        .header-right {
+            text-align: right;
+            width: 30%;
+        }
+        .header-center {
+            text-align: center;
+            width: 40%;
+            font-size: 13pt;
+        }
+        .header-left {
+            text-align: left;
+            width: 30%;
+        }
+        
+        .header-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+            margin: 6px 0 4px 0;
+        }
+        .header-info {
+            text-align: center;
+            font-size: 12pt;
+            font-weight: bold;
+            margin: 3px 0;
+        }
+        .advisor-row {
+            display: table;
+            width: 100%;
+            margin: 8px 0;
+            font-size: 12pt;
+            font-weight: bold;
+        }
+        .advisor-row > div {
+            display: table-cell;
+            width: 25%;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        .course-table {
+            margin: 8px 0;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        .course-table th,
+        .course-table td {
+            border: 1px solid #000;
+            padding: 2px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.1;
+        }
+        .course-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .students-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 13pt;
+            margin: 10px 0 6px 0;
+            padding: 4px;
+            background-color: #f0f0f0;
+            border: 1px solid #000;
+        }
+        
+        .students-table {
+            margin: 6px 0;
+            font-size: 12pt;
+            font-weight: bold;
+            page-break-inside: auto;
+        }
+        .students-table thead {
+            display: table-header-group;
+        }
+        .students-table tbody {
+            display: table-row-group;
+        }
+        .students-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        .students-table th,
+        .students-table td {
+            border: 1px solid #000;
+            padding: 2px 3px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.1;
+        }
+        .students-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .students-table td:nth-child(1) {
+            width: 5%;
+        }
+        .students-table td:nth-child(2) {
+            width: 12%;
+        }
+        .students-table td:nth-child(3) {
+            text-align: right;
+            width: 68%;
+            padding-right: 6px;
+        }
+        .students-table td:nth-child(4) {
+            width: 15%;
+        }
+        
+        .final-footer-section {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #000;
+            /* no page-break-before here */
+        }
+        .summary {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 12pt;
+            font-weight: bold;
+        }
+        .summary p {
+            margin: 6px 0;
+        }
+        .footer-table {
+            font-size: 11pt;
+            font-weight: bold;
+        }
+        .footer-table td {
+            border: 1px solid #000;
+            padding: 8px 4px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+    <div class="doc-header">
+        <div class="header-grid">
+            <div class="header-cell header-right">
+                كلية الآداب<br>جامعة بني سويف
+            </div>
+            <div class="header-cell header-center">
+                وحدة الإرشاد الأكاديمي
+            </div>
+            <div class="header-cell header-left">
+                قسم اللغة الانجليزية
+            </div>
+        </div>
+    </div>
+    
+    <div class="header-title">بيان تسجيل مقرر دراسي</div>
+    <div class="header-info">الفصل الدراسي : الثاني العام الجامعي / 2025-2026</div>
+    <div class="header-info">قسم اللغة الانجليزيه الفرقه الثالثه</div>
+    
+    <div class="advisor-row">
+        <div><strong>المرشد الأكاديمي</strong></div>
+        <div></div>
+        <div><strong>تحريرًا في:</strong></div>
+        <div></div>
+    </div>
+    
+    <table class="course-table">
+        <thead>
+            <tr>
+                <th colspan="10">بيانات المقرر</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th rowspan="2">م</th>
+                <th rowspan="2">كود المقرر</th>
+                <th rowspan="2">اسم المقرر كما باللائحة</th>
+                <th colspan="2">نوع المقرر</th>
+                <th colspan="2">طبيعة المقرر</th>
+                <th colspan="2">الساعات</th>
+                <th rowspan="2">المتطلب السابق وحالة الطالب فيه</th>
+            </tr>
+            <tr>
+                <th>إجباري</th>
+                <th>اختياري</th>
+                <th>تخصصي</th>
+                <th>غير تخصصي</th>
+                <th>نظري</th>
+                <th>عملي</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>${currentCourse}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="students-header">بيانات الطلاب المسجلين في المقرر</div>
+    
+    <table class="students-table">
+        <thead>
+            <tr>
+                <th>م</th>
+                <th>رقم الجلوس</th>
+                <th>الاسم</th>
+                <th>الحاله</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${allStudents.map(student => `
+            <tr>
+                <td>${student.index}</td>
+                <td>${student.seatNo}</td>
+                <td>${student.name}</td>
+                <td>${student.status}</td>
+            </tr>
+            `).join('')}
+        </tbody>
+    </table>
+    
+    <div class="final-footer-section">
+        <div class="summary">
+            <p><strong>ملخص التسجيل</strong></p>
+            <p>إجمالي عدد الطلاب المسجلين: <strong>${registeredCount}</strong></p>
+            <p>إجمالي عدد الطلاب غير المسجلين: <strong>${notRegisteredCount}</strong></p>
+            <p>إجمالي عدد الطلاب: <strong>${allStudents.length}</strong></p>
+        </div>
+        
+        <table class="footer-table">
+            <tr>
+                <td>المرشد الأكاديمي للقسم أو البرنامج</td>
+                <td>رئيس القسم أو البرنامج</td>
+                <td>مدير وحدة الإرشاد الأكاديمي</td>
+                <td>وكيلة الكلية لشئون التعليم والطلاب</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>ا.م.د / شيماء سيد عبد العاطي</td>
+                <td>أ.م.د/ محمد رأفت محمود</td>
+                <td>أ.د/ رحاب يوسف</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
+            `;
+        }
+
+        function exportToWord() {
+            if (!currentCourse) {
+                alert('من فضلك اختر مادة أولاً');
+                return;
+            }
+
+            const htmlContent = generateReportHTML();
+            const blob = new Blob(['\ufeff', htmlContent], {
+                type: 'application/msword'
+            });
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `بيان_تسجيل_${currentCourse.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.doc`;
+            link.click();
+        }
+
+        window.onload = function() {
+            loadStudentsData();
+        };
+    </script>
+</body>
+</html>
+
+
+
+
+
